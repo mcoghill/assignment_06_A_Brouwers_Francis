@@ -111,6 +111,7 @@ mapview(BEC_ldb_extract, zcol = "SUBZONE")
 ```
 ```{r}
 <<<<<<< HEAD
+
 #taking forever 1
 #taking forever 2
 #taking forever 3
@@ -118,6 +119,7 @@ mapview(BEC_ldb_extract, zcol = "SUBZONE")
 #taking forever 5
 ```
 =======
+
 #hello
 #hello
 #hello
@@ -127,3 +129,4 @@ mapview(BEC_ldb_extract, zcol = "SUBZONE")
 
 >>>>>>> adadd0884ab14d212fcf119d216689319281de63
 
+```
