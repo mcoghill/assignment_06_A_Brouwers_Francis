@@ -109,21 +109,16 @@ print(elevation_average)
 ```{r}
 mapview(BEC_ldb_extract, zcol = "SUBZONE")
 ```
-```{r}
-<<<<<<< HEAD
 
+```{r}
+#hello
+#hello
+#hello
+#hello
+#hello
 #taking forever 1
 #taking forever 2
 #taking forever 3
 #taking forever 4
 #taking forever 5
-=======
-
-#hello
-#hello
-#hello
-#hello
-#hello
->>>>>>> adadd0884ab14d212fcf119d216689319281de63
-
 ```
