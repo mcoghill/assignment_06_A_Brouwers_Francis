@@ -1,0 +1,78 @@
+```{r}
+##associated packages and libraries
+
+install.packages("tidyverse")
+install.packages("readxl")
+install.packages("sf")
+install.packages("terra")
+install.packages("mapview")
+install.packages("bcdata")
+install.packages("bcmaps")
+
+library(readxl)
+library(sf)
+library(tidyverse)
+library(mapview)
+library(bcdata)
+
+```
+
+```{r}
+
+##importing data and summarizing to get only lac du bois area fires
+
+BCfire <- bcdc_query_geodata("https://catalogue.data.gov.bc.ca/dataset/e2dadc60-292f-4d98-b42b-56ca9e4fe694/resource/eb2fffa5-674d-400f-8abf-88e996ba1fab", crs = 3005)
+
+BCfiredescribe <- bcdc_describe_feature("https://catalogue.data.gov.bc.ca/dataset/e2dadc60-292f-4d98-b42b-56ca9e4fe694")
+
+ldb <- bcdc_query_geodata("1130248f-f1a3-4956-8b2e-38d29d3e4af7", crs = 3005) |> 
+  filter(PROTECTED_LANDS_NAME == "LAC DU BOIS GRASSLANDS PROTECTED AREA") |> 
+  collect()
+
+mapview(ldb)
+
+ldb_fire_intersect <- bcdc_query_geodata("https://catalogue.data.gov.bc.ca/dataset/e2dadc60-292f-4d98-b42b-56ca9e4fe694/resource/eb2fffa5-674d-400f-8abf-88e996ba1fab") %>%
+	filter(INTERSECTS(ldb)) %>%
+	collect()
+
+mapview(ldb_fire_intersect)
+
+##number of fires by year
+
+fires_by_year <- ldb_fire_intersect %>%
+  group_by(FIRE_YEAR) %>%
+  summarise(number_of_fires = n())
+
+##overall fire cause
+
+fire_cause <- ldb_fire_intersect %>%
+  group_by(FIRE_CAUSE) %>%
+  summarise(number_of_fires = n())
+
+##mapview colorized by fire cause
+
+mapview(ldb_fire_intersect, zcol = "FIRE_CAUSE", col.regions = viridis::viridis(100))
+
+##boxplot of the mean fires per year by fire cause
+
+fires_count_per_year <- ldb_fire_intersect %>%
+  group_by(FIRE_YEAR, FIRE_CAUSE) %>%
+  summarise(Count = n(), .groups = "drop")
+
+mean_fires_per_year <- fires_count_per_year %>%
+  group_by(FIRE_CAUSE) %>%
+  summarise(Mean_Fires = mean(Count))
+
+ggplot(fires_count_per_year, aes(x = FIRE_CAUSE, y = Count, fill = FIRE_CAUSE)) +
+  geom_boxplot() +
+  theme_minimal() +
+  labs(title = "Distribution of Fire Incidents Per Year by Cause",
+       x = "Fire Cause",
+       y = "Number of Fires") +
+  scale_fill_viridis_d()
+
+```
+
+```{r}
+
+```
