@@ -1,0 +1,112 @@
+```{r}
+# Packages needed for today (only run if you need to install the package):
+install.packages("tidyverse")
+install.packages("readxl")
+install.packages("sf")
+install.packages("terra")
+install.packages("mapview")
+install.packages("bcdata")
+install.packages("bcmaps")
+```
+
+```{r}
+library(readxl)
+library(sf)
+library(tidyverse)
+library(mapview)
+
+library(bcdata)
+ldb <- bcdc_query_geodata("1130248f-f1a3-4956-8b2e-38d29d3e4af7", crs = 3005) |> 
+  filter(PROTECTED_LANDS_NAME == "LAC DU BOIS GRASSLANDS PROTECTED AREA") |> 
+  collect()
+view(ldb)
+mapview(ldb)
+```
+
+```{r}
+BEC_bbox <- bcdc_query_geodata("f358a53b-ffde-4830-a325-a5a03ff672c3", crs = 3005) %>%
+  filter(BBOX(ldb)) %>%
+  collect() %>%
+st_intersection(st_geometry(ldb))
+mapview(BEC_bbox) 
+```
+
+
+
+```{r}
+# Create a bar plot where the “MAP_LABEL” column is along the X-axis, and the area is along the Y-axis. Display each bar using different colors.
+
+#ggplot(BEC_bbox, aes(x = MAP_LABEL, y = FEATURE_AREA_SQM, fill = MAP_LABEL)) +
+ # geom_bar(stat = "identity", show.legend = FALSE) +
+  #scale_fill_viridis_d() + 
+  #labs(x = "MAP_LABEL", y = "AREA", title = "Zone Areas") +
+  #theme_minimal() + 
+  #theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+BEC_bbox$FEATURE_AREA_HA = BEC_bbox$FEATURE_AREA_SQM / 10000 
+
+print(BEC_bbox$FEATURE_AREA_HA) # print just a column to see results 
+#-------------------------------------------------------------------------------
+
+#	Calculate the total area of each of the resulting features in hectares.
+grouped_bec <- BEC_bbox %>%
+  group_by(ZONE_NAME)
+
+area_summary <- grouped_bec %>%
+  summarize(total_area_hectares = sum(FEATURE_AREA_SQM) / 10000)
+
+print(area_summary)
+```
+```{r}
+ggplot(BEC_bbox, aes(x = MAP_LABEL, y = FEATURE_AREA_HA, fill = MAP_LABEL)) +
+  geom_bar(stat = "identity", show.legend = FALSE) +
+  scale_fill_viridis_d() + 
+  labs(x = "MAP_LABEL", y = "AREA (HA)", title = "Zone Areas") +
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
+```
+
+```{r}
+# Extract the mean elevation of each of the features (you will need to pull in the DEM from the “cded_terra” function)
+
+library(terra)
+library(bcmaps)
+# cded_terra from the bcmaps package
+site_dem <- cded_terra(BEC_bbox)
+site_dem
+plot(site_dem)
+
+# Perform initial projection to BC Albers
+site_dem_albers <- project(site_dem, "epsg:3005")
+
+
+site_dem_mask <- mask(site_dem_albers, vect(BEC_bbox))
+
+# Write this TIF file to disk; it will save in the same folder as this script
+#writeRaster(site_dem_mask, "BEC_bbox_dem.tif", overwrite = TRUE)
+
+# Plot the DEM and color the NA areas in grey to show that the masking worked:
+
+plot(site_dem_mask, colNA = "grey")
+```
+
+
+```{r}
+BEC_ldb_vect <- vect(BEC_bbox)
+BEC_ldb_extract <- terra::extract(site_dem_mask, BEC_bbox, fun = mean, na.rm = TRUE, bind = TRUE)
+BEC_bbox_df <- as.data.frame(BEC_ldb_extract)
+```
+
+```{r}
+grouped_bec <- BEC_bbox_df %>%
+  group_by(ZONE_NAME)
+
+elevation_average <- grouped_bec %>%
+  summarize(mean_elevation = mean(elevation))
+
+print(elevation_average)
+```
+```{r}
+mapview(BEC_ldb_extract, zcol = "SUBZONE")
+```
+
