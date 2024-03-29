@@ -37,11 +37,19 @@ ldb_fire_intersect <- bcdc_query_geodata("https://catalogue.data.gov.bc.ca/datas
 
 mapview(ldb_fire_intersect)
 
+#########
+## 4/4 ##
+#########
+
 ##number of fires by year
 
 fires_by_year <- ldb_fire_intersect %>%
   group_by(FIRE_YEAR) %>%
   summarise(number_of_fires = n())
+
+#########
+## 2/2 ##
+#########
 
 ##overall fire cause
 
@@ -49,9 +57,17 @@ fire_cause <- ldb_fire_intersect %>%
   group_by(FIRE_CAUSE) %>%
   summarise(number_of_fires = n())
 
+#########
+## 2/2 ##
+#########
+
 ##mapview colorized by fire cause
 
 mapview(ldb_fire_intersect, zcol = "FIRE_CAUSE", col.regions = viridis::viridis(100))
+
+#########
+## 2/2 ##
+#########
 
 ##boxplot of the mean fires per year by fire cause
 
@@ -70,6 +86,17 @@ ggplot(fires_count_per_year, aes(x = FIRE_CAUSE, y = Count, fill = FIRE_CAUSE)) 
        x = "Fire Cause",
        y = "Number of Fires") +
   scale_fill_viridis_d()
+
+#########
+## 5/5 ##
+#########
+
+
+## Part 1 total:
+
+###########
+## 15/15 ##
+###########
 
 ```
 

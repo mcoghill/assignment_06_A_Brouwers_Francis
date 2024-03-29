@@ -30,7 +30,7 @@ BEC_bbox <- bcdc_query_geodata("f358a53b-ffde-4830-a325-a5a03ff672c3", crs = 300
 st_intersection(st_geometry(ldb))
 mapview(BEC_bbox) 
 ```
-
+4/4
 
 
 ```{r}
@@ -57,6 +57,9 @@ area_summary <- grouped_bec %>%
 
 print(area_summary)
 ```
+2/2
+
+
 ```{r}
 ggplot(BEC_bbox, aes(x = MAP_LABEL, y = FEATURE_AREA_HA, fill = MAP_LABEL)) +
   geom_bar(stat = "identity", show.legend = FALSE) +
@@ -65,6 +68,9 @@ ggplot(BEC_bbox, aes(x = MAP_LABEL, y = FEATURE_AREA_HA, fill = MAP_LABEL)) +
   theme_minimal() + 
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
 ```
+4/5
+You used the "FEATURE_AREA_SQM" column, but should have created your own values of area. This is because the FEATURE_AREA_SQM comes from the original BEC file, so that area corresponds to the shape of that entire feature, including areas beyond what our clipped area is.
+
 
 ```{r}
 # Extract the mean elevation of each of the features (you will need to pull in the DEM from the “cded_terra” function)
@@ -97,6 +103,8 @@ BEC_ldb_extract <- terra::extract(site_dem_mask, BEC_bbox, fun = mean, na.rm = T
 BEC_bbox_df <- as.data.frame(BEC_ldb_extract)
 ```
 
+
+
 ```{r}
 grouped_bec <- BEC_bbox_df %>%
   group_by(ZONE_NAME)
@@ -106,9 +114,15 @@ elevation_average <- grouped_bec %>%
 
 print(elevation_average)
 ```
+4/4
+
+
 ```{r}
 mapview(BEC_ldb_extract, zcol = "SUBZONE")
 ```
+2/2
+
+PART 1 TOTAL: 16/17
 
 ```{r}
 #hello
@@ -122,3 +136,5 @@ mapview(BEC_ldb_extract, zcol = "SUBZONE")
 #taking forever 4
 #taking forever 5
 ```
+
+PART 2 TOTAL: 5/5
